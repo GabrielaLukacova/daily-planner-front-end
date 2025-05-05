@@ -1,0 +1,115 @@
+<template>
+            <div class="month-year">
+            {{ formattedMonthYear }}
+        </div>
+    <div class="week-days">
+      <button class="arrow" @click="prevWeek">←</button>
+      <div class="days">
+        <div
+          v-for="(day, index) in weekDays"
+          :key="index"
+          class="day"
+          :class="{ today: isToday(day.date) }"
+        >
+          <div class="day-name">{{ day.label }}</div>
+          <div class="day-number">{{ day.date.getDate() }}</div>
+        </div>
+      </div>
+      <button class="arrow" @click="nextWeek">→</button>
+    </div>
+  </template>
+  
+  <script setup>
+  import { ref, computed } from 'vue'
+  import { format, startOfWeek, addDays, subWeeks, addWeeks, isSameDay } from 'date-fns'
+
+  const formattedMonthYear = computed(() => format(currentDate.value, 'MMMM yyyy'))
+  
+  const currentDate = ref(new Date())
+  
+  const startOfCurrentWeek = computed(() => startOfWeek(currentDate.value, { weekStartsOn: 1 }))
+  
+  const weekDays = computed(() => {
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = addDays(startOfCurrentWeek.value, i)
+      return {
+        label: labels[i],
+        date,
+      }
+    })
+  })
+  
+  const isToday = (date) => isSameDay(date, new Date())
+  
+  const prevWeek = () => {
+    currentDate.value = subWeeks(currentDate.value, 1)
+  }
+  
+  const nextWeek = () => {
+    currentDate.value = addWeeks(currentDate.value, 1)
+  }
+  </script>
+  
+  <style scoped>
+  .month-year {
+  font-size: 28px;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #111;
+}
+  .week-days {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    font-family: 'Inter', sans-serif;
+    padding: 16px 0;
+  }
+  
+  .arrow {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    transition: transform 0.2s;
+  }
+  
+  .arrow:hover {
+    transform: scale(1.2);
+  }
+  
+  .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    height: 85px;
+    transition: background-color 0.3s;
+  }
+  
+  .day.today {
+    background-color: #FAD809;
+  }
+  
+  .day-number {
+    font-size: 22px;
+  }
+  
+  .day-name {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+  </style>
+  
