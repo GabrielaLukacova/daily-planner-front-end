@@ -1,4 +1,5 @@
 <template>
+  <div class="calendar">
             <div class="month-year">
             {{ formattedMonthYear }}
         </div>
@@ -17,6 +18,7 @@
       </div>
       <button class="arrow" @click="nextWeek">→</button>
     </div>
+  </div>
   </template>
   
   <script setup>
@@ -52,6 +54,11 @@
   </script>
   
   <style scoped>
+
+  .calendar {
+  padding: 80px
+  }
+
   .month-year {
   font-size: 28px;
   margin-bottom: 12px;
@@ -63,7 +70,6 @@
     align-items: center;
     justify-content: center;
     gap: 25px;
-    font-family: 'Inter', sans-serif;
     padding: 16px 0;
   }
   
@@ -86,6 +92,7 @@
     gap: 15px;
     width: 100%;
     max-width: 800px;
+    gap:2rem;
   }
   
   .day {
@@ -93,7 +100,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #f5f5f5;
+    /* background-color: #F4F3EB;  */
     border-radius: 10px;
     height: 85px;
     transition: background-color 0.3s;
