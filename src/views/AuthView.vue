@@ -11,7 +11,6 @@
         </div>
         <div v-else class="toggle-text">
           <h2>Already have an account?</h2>
-          <p>Click below to log in</p>
           <button class="switch-btn" @click="toggleMode">Login</button>
         </div>
       </div>
@@ -19,7 +18,7 @@
       <!-- Right Box -->
       <div class="form-box right-box">
         <div v-if="isSignup" class="form-content">
-          <h2>Create Account</h2>
+          <h2>Create account</h2>
           <input type="text" placeholder="Name" v-model="name" />
           <input type="text" placeholder="Email" v-model="email" />
           <input type="password" placeholder="Password" v-model="password" />
@@ -27,8 +26,7 @@
         </div>
         <div v-else class="toggle-text">
           <h2>Don’t have an account?</h2>
-          <p>Click below to create one</p>
-          <button class="switch-btn" @click="toggleMode">Create Account</button>
+          <button class="switch-btn" @click="toggleMode">Create account</button>
         </div>
       </div>
 
@@ -55,7 +53,8 @@ const toggleMode = () => {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 5rem;
+  margin-top: 15rem;
+
 }
 
 .auth-container {
@@ -117,7 +116,7 @@ const toggleMode = () => {
 }
 
 .form-content button:hover {
-  background: #e4e1d4;
+  background: #FAD809;
 }
 
 .toggle-text {

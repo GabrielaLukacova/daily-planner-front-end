@@ -49,7 +49,6 @@ function updateText() {
 }
 
 onMounted(() => {
-  // Load existing note if needed
 });
 </script>
 

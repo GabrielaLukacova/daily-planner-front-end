@@ -1,13 +1,13 @@
 <template>
-  <div class="flex min-h-screen"> 
-    <!-- Sidebar on the left -->
-    <div class="w-64 flex-shrink-0">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <div v-if="route.name !== 'auth'" class="w-64 flex-shrink-0">
       <Sidebar />
     </div>
 
-    <!-- Main content on the right -->
+    <!-- Main content -->
     <div class="flex-1 flex flex-col">
-      <WeekDays class="border-b border-gray-300 p-4" />
+      <WeekDays v-if="route.name !== 'auth'" class="border-b border-gray-300 p-4" />
       <main class="flex-1 p-6 overflow-auto">
         <RouterView />
       </main>
@@ -25,10 +25,12 @@ import Sidebar from '@/components/Sidebar.vue'
 import WeekDays from '@/components/WeekDays.vue'
 import { format, startOfWeek, addDays, subWeeks, addWeeks, isSameDay } from 'date-fns'
 
+import { useRoute } from 'vue-router'
 
 
 
 const { logout } = useUsers()
+const route = useRoute()
 
 const isLoggedIn = computed(() => state.isLoggedIn)
 
