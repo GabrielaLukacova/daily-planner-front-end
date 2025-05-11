@@ -43,6 +43,9 @@
   flex-direction: column;
   padding:  5rem 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  position: fixed;
+
+z-index: 50;
   
 }
 

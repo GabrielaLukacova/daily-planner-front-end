@@ -1,9 +1,16 @@
 <template>
-  <div class="w-screen flex">
-    <Sidebar />
-    <WeekDays />
-    <div class="flex-1 ml-64">
-      <RouterView />
+  <div class="flex min-h-screen"> 
+    <!-- Sidebar on the left -->
+    <div class="w-64 flex-shrink-0">
+      <Sidebar />
+    </div>
+
+    <!-- Main content on the right -->
+    <div class="flex-1 flex flex-col">
+      <WeekDays class="border-b border-gray-300 p-4" />
+      <main class="flex-1 p-6 overflow-auto">
+        <RouterView />
+      </main>
     </div>
   </div>
 </template>
@@ -29,5 +36,8 @@ const isLoggedIn = computed(() => state.isLoggedIn)
 
 
 <style scoped>
-
+.content-wrapper {
+  margin-left: 16rem; 
+  padding: 2rem;      
+}
 </style>
