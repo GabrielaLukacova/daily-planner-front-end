@@ -25,6 +25,7 @@
           <input type="password" placeholder="Password" v-model="password" />
           <button @click.prevent="handleRegister">Register</button>
           <p v-if="registerError" class="error-msg">{{ registerError }}</p>
+          <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
         </div>
         <div v-else class="toggle-text">
           <h2>Don’t have an account?</h2>
@@ -43,7 +44,16 @@ import { ref } from 'vue'
 import { useUsers } from '../modules/auth/useUsers'
 import { useRouter } from 'vue-router'
 
-const { fetchToken, registerUser, name, email, password } = useUsers()
+const {
+  fetchToken,
+  registerUser,
+  name,
+  email,
+  password,
+  error,
+  successMessage
+} = useUsers()
+
 const isSignup = ref(false)
 const router = useRouter()
 
@@ -52,6 +62,9 @@ const registerError = ref<string | null>(null)
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value
+  loginError.value = null
+  registerError.value = null
+  successMessage.value = null
 }
 
 const handleLogin = async () => {
@@ -61,20 +74,24 @@ const handleLogin = async () => {
     console.log('✅ Logged in!')
     router.push('/my-day')
   } catch (err) {
-    loginError.value = 'Invalid email or password'
-    console.error('❌ Login error:', err)
+    loginError.value = error.value || 'Invalid email or password'
   }
 }
 
 const handleRegister = async () => {
   try {
     registerError.value = null
+    successMessage.value = null
     await registerUser(name.value, email.value, password.value)
-    console.log('✅ Registered!')
-    router.push('/my-day')
+
+    if (successMessage.value) {
+      console.log('✅ Registered!')
+    } else {
+      registerError.value = error.value || 'Registration failed'
+    }
   } catch (err) {
-    registerError.value = 'Registration failed'
-    console.error('❌ Register error:', err)
+    registerError.value = error.value || 'Registration failed'
+    console.error('❌ Register error:', registerError.value)
   }
 }
 </script>
@@ -187,6 +204,12 @@ const handleRegister = async () => {
 
 .error-msg {
   color: red;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+
+.success-msg {
+  color: green;
   font-size: 0.9rem;
   margin-top: -0.5rem;
 }
