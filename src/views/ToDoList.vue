@@ -66,8 +66,7 @@ import axios from "axios";
 import confetti from "canvas-confetti";
 import type { Task } from "../interfaces/interfaces";
 
-// Temporary mock for testing
-const userId = "replace_with_logged_in_user_id";
+const userId = localStorage.getItem("userIDToken") ?? "";
 
 // Extend Task with _id and local editing state
 type TaskWithLocalState = Task & { _id: string; editing?: boolean };
@@ -75,9 +74,9 @@ const newTask = ref("");
 const tasks = ref<TaskWithLocalState[]>([]);
 
 const api = axios.create({
-  baseURL: "http://localhost:4000/api/tasks",
+  baseURL: "https://daily-planner-kyar.onrender.com/api/tasks",
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+    Authorization: `Bearer ${localStorage.getItem("lsToken") ?? ""}`,
   },
 });
 
@@ -96,19 +95,43 @@ async function fetchTasks() {
 }
 
 async function addTask() {
-  if (!newTask.value.trim()) return;
+  const taskText = newTask.value.trim();
+  const token = localStorage.getItem("lsToken");
+  const userId = localStorage.getItem("userIDToken");
+
+  console.log("➡️ Triggered addTask()");
+  console.log("📝 Task:", taskText);
+  console.log("👤 User ID:", userId);
+  console.log("🔐 Token:", token);
+
+  if (!taskText || !userId || !token) {
+    console.warn("❌ Missing required fields");
+    return;
+  }
 
   try {
-    const res = await api.post("/", {
-      title: newTask.value.trim(),
-      _createdBy: userId,
-    });
+    const res = await axios.post(
+      "https://daily-planner-kyar.onrender.com/api/tasks",
+      {
+        title: taskText,
+        _createdBy: userId,      // Make sure userId is correctly fetched
+        isCompleted: false,      // Default value
+        highPriority: false,     // Default value
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("✅ Task created:", res.data);
     tasks.value.push({ ...res.data, editing: false });
     newTask.value = "";
-  } catch (err) {
-    console.error("Failed to add task", err);
+  } catch (err: any) {
+    console.error("🚨 Failed to add task:", err?.response?.data || err.message);
   }
 }
+
 
 async function completeTask(task: TaskWithLocalState) {
   task.isCompleted = !task.isCompleted;
@@ -162,6 +185,7 @@ const sortedTasks = computed(() => {
   return [...tasks.value].sort((a, b) => Number(b.highPriority) - Number(a.highPriority));
 });
 </script>
+
 
 <style scoped>
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");

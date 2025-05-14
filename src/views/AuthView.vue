@@ -43,9 +43,14 @@ import { ref } from 'vue'
 import { useUsers } from '../modules/auth/useUsers'
 import { useRouter } from 'vue-router'
 
-const { fetchToken, registerUser, name, email, password } = useUsers()
-const isSignup = ref(false)
+const { fetchToken, registerUser } = useUsers()
 const router = useRouter()
+
+// 👇 Locally defined reactive form fields (not in composable)
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const isSignup = ref(false)
 
 const loginError = ref<string | null>(null)
 const registerError = ref<string | null>(null)
@@ -78,6 +83,7 @@ const handleRegister = async () => {
   }
 }
 </script>
+
 
 <style scoped>
 .auth-wrapper {
