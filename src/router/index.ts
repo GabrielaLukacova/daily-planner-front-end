@@ -4,9 +4,13 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/auth',
       name: 'auth',
       component: () => import('../views/AuthView.vue'),
+    },
+    {
+      path: '/',
+      redirect: '/auth' 
     },
     {
       path: '/my-day',
