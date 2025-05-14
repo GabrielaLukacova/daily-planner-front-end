@@ -1,13 +1,14 @@
 <template>
   <div class="auth-wrapper">
     <div :class="['auth-container', isSignup ? 'signup-mode' : '']">
-      <!-- Left Box -->
+      <!-- Left Box (Login) -->
       <div class="form-box left-box">
         <div v-if="!isSignup" class="form-content">
           <h2>Login</h2>
           <input type="text" placeholder="Email" v-model="email" />
           <input type="password" placeholder="Password" v-model="password" />
-          <button @click="fetchToken(email, password)">Login</button>
+          <button @click="handleLogin">Login</button>
+          <p v-if="loginError" class="error-msg">{{ loginError }}</p>
         </div>
         <div v-else class="toggle-text">
           <h2>Already have an account?</h2>
@@ -15,14 +16,15 @@
         </div>
       </div>
 
-      <!-- Right Box -->
+      <!-- Right Box (Register) -->
       <div class="form-box right-box">
         <div v-if="isSignup" class="form-content">
           <h2>Create account</h2>
           <input type="text" placeholder="Name" v-model="name" />
           <input type="text" placeholder="Email" v-model="email" />
           <input type="password" placeholder="Password" v-model="password" />
-          <button @click.prevent="registerUser(name, email, password)">Register</button>
+          <button @click.prevent="handleRegister">Register</button>
+          <p v-if="registerError" class="error-msg">{{ registerError }}</p>
         </div>
         <div v-else class="toggle-text">
           <h2>Don’t have an account?</h2>
@@ -39,12 +41,41 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useUsers } from '../modules/auth/useUsers'
+import { useRouter } from 'vue-router'
 
-const { fetchToken, registerUser, logout, name, email, password } = useUsers()
+const { fetchToken, registerUser, name, email, password } = useUsers()
 const isSignup = ref(false)
+const router = useRouter()
+
+const loginError = ref<string | null>(null)
+const registerError = ref<string | null>(null)
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value
+}
+
+const handleLogin = async () => {
+  try {
+    loginError.value = null
+    await fetchToken(email.value, password.value)
+    console.log('✅ Logged in!')
+    router.push('/my-day')
+  } catch (err) {
+    loginError.value = 'Invalid email or password'
+    console.error('❌ Login error:', err)
+  }
+}
+
+const handleRegister = async () => {
+  try {
+    registerError.value = null
+    await registerUser(name.value, email.value, password.value)
+    console.log('✅ Registered!')
+    router.push('/my-day')
+  } catch (err) {
+    registerError.value = 'Registration failed'
+    console.error('❌ Register error:', err)
+  }
 }
 </script>
 
@@ -54,7 +85,6 @@ const toggleMode = () => {
   display: flex;
   justify-content: center;
   margin-top: 15rem;
-
 }
 
 .auth-container {
@@ -78,14 +108,6 @@ const toggleMode = () => {
   transition: all 0.2s ease;
   flex-direction: column;
   position: relative;
-}
-
-.left-box {
-  color: #222;
-}
-
-.right-box {
-  color: #222;
 }
 
 .form-content {
@@ -116,7 +138,7 @@ const toggleMode = () => {
 }
 
 .form-content button:hover {
-  background: #FAD809;
+  background: #fad809;
 }
 
 .toggle-text {
@@ -139,7 +161,6 @@ const toggleMode = () => {
   background: #f4f3eb;
 }
 
-/* Slider background box */
 .slider-box {
   position: absolute;
   width: 50%;
@@ -162,5 +183,11 @@ const toggleMode = () => {
   inset: 0;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(2px);
+}
+
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
 }
 </style>
