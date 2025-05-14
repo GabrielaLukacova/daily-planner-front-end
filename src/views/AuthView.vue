@@ -24,7 +24,7 @@
           <input type="text" placeholder="Email" v-model="email" />
           <input type="password" placeholder="Password" v-model="password" />
           <button @click.prevent="handleRegister">Register</button>
-          <p v-if="registerError" class="error-msg">{{ registerError }}</p>
+          <p v-if="error" class="error-msg">{{ error }}</p>
           <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
         </div>
         <div v-else class="toggle-text">
@@ -56,14 +56,12 @@ const {
 
 const isSignup = ref(false)
 const router = useRouter()
-
 const loginError = ref<string | null>(null)
-const registerError = ref<string | null>(null)
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value
   loginError.value = null
-  registerError.value = null
+  error.value = null
   successMessage.value = null
 }
 
@@ -80,18 +78,15 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
-    registerError.value = null
     successMessage.value = null
-    await registerUser(name.value, email.value, password.value)
+    error.value = null
+    const success = await registerUser(name.value, email.value, password.value)
 
     if (successMessage.value) {
       console.log('✅ Registered!')
-    } else {
-      registerError.value = error.value || 'Registration failed'
     }
   } catch (err) {
-    registerError.value = error.value || 'Registration failed'
-    console.error('❌ Register error:', registerError.value)
+    console.error('❌ Registration failed')
   }
 }
 </script>

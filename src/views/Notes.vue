@@ -9,6 +9,7 @@
         <option value="24px">Large</option>
         <option value="32px">Huge</option>
       </select>
+      <button @click="saveNote">Save</button>
     </div>
 
     <div
@@ -18,6 +19,9 @@
       @input="updateText"
       :style="{ fontSize: selectedSize }"
     ></div>
+
+    <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
+    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
   </div>
 </template>
 
@@ -27,6 +31,8 @@ import { ref, onMounted } from 'vue';
 const editor = ref<HTMLElement | null>(null);
 const selectedSize = ref('18px');
 const text = ref('');
+const successMessage = ref<string | null>(null);
+const errorMessage = ref<string | null>(null);
 
 function toggleBold() {
   document.execCommand('bold');
@@ -48,8 +54,46 @@ function updateText() {
   }
 }
 
-onMounted(() => {
-});
+async function saveNote() {
+  const token = localStorage.getItem('lsToken');
+  const userId = localStorage.getItem('userIDToken');
+
+  if (!token || !userId) {
+    errorMessage.value = 'You must be logged in to save notes.';
+    return;
+  }
+
+  const noteData = {
+    text: text.value,
+    date: new Date().toISOString(),
+    _createdBy: userId,
+  };
+
+  try {
+    const response = await fetch('https://daily-planner-kyar.onrender.com/api/notes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(noteData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to save note.');
+    }
+
+    const saved = await response.json();
+    console.log('✅ Note saved:', saved);
+    successMessage.value = '✅ Note saved successfully!';
+    errorMessage.value = null;
+  } catch (err: any) {
+    console.error('❌ Error saving note:', err.message);
+    errorMessage.value = err.message || 'An error occurred while saving.';
+    successMessage.value = null;
+  }
+}
 </script>
 
 <style scoped>
@@ -101,6 +145,16 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   outline: none;
 }
-</style>
 
-  
+.success-msg {
+  color: green;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.error-msg {
+  color: red;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+</style>
