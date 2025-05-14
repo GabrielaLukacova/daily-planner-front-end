@@ -1,4 +1,3 @@
-
 <template>
   <div class="todo-wrapper">
     <div class="todo-container">
@@ -19,11 +18,15 @@
       <ul class="task-list">
         <li
           v-for="(task, index) in sortedTasks"
-          :key="index"
-          :class="{ done: task.done, priority: task.priority }"
+          :key="task._id"
+          :class="{ done: task.isCompleted, priority: task.highPriority }"
         >
           <label class="custom-checkbox">
-            <input type="checkbox" v-model="task.done" @change="completeTask(task)" />
+            <input
+              type="checkbox"
+              :checked="task.isCompleted"
+              @change="completeTask(task)"
+            />
             <span class="checkmark"></span>
           </label>
 
@@ -32,11 +35,11 @@
             v-if="!task.editing"
             @dblclick="editTask(task)"
           >
-            {{ task.text }}
+            {{ task.title }}
           </span>
           <input
             v-else
-            v-model="task.text"
+            v-model="task.title"
             @keyup.enter="saveEdit(task)"
             @blur="saveEdit(task)"
             class="edit-input"
@@ -45,11 +48,11 @@
           <div class="task-actions">
             <i
               class="fas fa-star star-icon"
-              :class="{ active: task.priority }"
+              :class="{ active: task.highPriority }"
               @click="togglePriority(task)"
             ></i>
             <i class="fas fa-edit edit-icon" @click="editTask(task)"></i>
-            <i class="fas fa-trash delete-icon" @click="deleteTask(index)"></i>
+            <i class="fas fa-trash delete-icon" @click="deleteTask(task._id)"></i>
           </div>
         </li>
       </ul>
@@ -57,30 +60,61 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from "vue";
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import axios from "axios";
 import confetti from "canvas-confetti";
+import type { Task } from "../interfaces/interfaces";
 
+// Temporary mock for testing
+const userId = "replace_with_logged_in_user_id";
+
+// Extend Task with _id and local editing state
+type TaskWithLocalState = Task & { _id: string; editing?: boolean };
 const newTask = ref("");
-const tasks = ref([]);
+const tasks = ref<TaskWithLocalState[]>([]);
 
-function addTask() {
-  if (newTask.value.trim() === "") return;
-  tasks.value.push({
-    text: newTask.value,
-    done: false,
-    priority: false,
-    editing: false,
-  });
-  newTask.value = "";
+const api = axios.create({
+  baseURL: "http://localhost:4000/api/tasks",
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+  },
+});
+
+onMounted(fetchTasks);
+
+async function fetchTasks() {
+  try {
+    const response = await api.get("/");
+    tasks.value = response.data.map((task: TaskWithLocalState) => ({
+      ...task,
+      editing: false,
+    }));
+  } catch (err) {
+    console.error("Failed to fetch tasks", err);
+  }
 }
 
-function togglePriority(task) {
-  task.priority = !task.priority;
+async function addTask() {
+  if (!newTask.value.trim()) return;
+
+  try {
+    const res = await api.post("/", {
+      title: newTask.value.trim(),
+      _createdBy: userId,
+    });
+    tasks.value.push({ ...res.data, editing: false });
+    newTask.value = "";
+  } catch (err) {
+    console.error("Failed to add task", err);
+  }
 }
 
-function completeTask(task) {
-  if (task.done) {
+async function completeTask(task: TaskWithLocalState) {
+  task.isCompleted = !task.isCompleted;
+  await updateTask(task);
+
+  if (task.isCompleted) {
     confetti({
       particleCount: 100,
       spread: 70,
@@ -89,23 +123,43 @@ function completeTask(task) {
   }
 }
 
-function editTask(task) {
+async function togglePriority(task: TaskWithLocalState) {
+  task.highPriority = !task.highPriority;
+  await updateTask(task);
+}
+
+function editTask(task: TaskWithLocalState) {
   task.editing = true;
 }
 
-function saveEdit(task) {
+async function saveEdit(task: TaskWithLocalState) {
   task.editing = false;
+  await updateTask(task);
 }
 
-function deleteTask(index) {
-  tasks.value.splice(index, 1);
+async function updateTask(task: TaskWithLocalState) {
+  try {
+    await api.put(`/${task._id}`, {
+      title: task.title,
+      isCompleted: task.isCompleted,
+      highPriority: task.highPriority,
+    });
+  } catch (err) {
+    console.error("Failed to update task", err);
+  }
+}
+
+async function deleteTask(taskId: string) {
+  try {
+    await api.delete(`/${taskId}`);
+    tasks.value = tasks.value.filter((t) => t._id !== taskId);
+  } catch (err) {
+    console.error("Failed to delete task", err);
+  }
 }
 
 const sortedTasks = computed(() => {
-  return [...tasks.value].sort((a, b) => {
-    if (a.priority === b.priority) return 0;
-    return a.priority ? -1 : 1;
-  });
+  return [...tasks.value].sort((a, b) => Number(b.highPriority) - Number(a.highPriority));
 });
 </script>
 

@@ -32,3 +32,10 @@ export interface Note {
   date: Date;
   _createdBy: string;
   }
+
+  export interface Task{
+    title: string;
+    isCompleted: boolean;
+    highPriority: boolean;
+    _createdBy: User["id"];
+}
