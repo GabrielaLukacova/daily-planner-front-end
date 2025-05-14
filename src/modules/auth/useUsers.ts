@@ -8,18 +8,30 @@ export const useUsers = () => {
 
   const token = ref<string | null>(localStorage.getItem('lsToken'))
   const error = ref<string | null>(null)
+  const successMessage = ref<string | null>(null)
   const user = ref<User | null>(null)
 
+  const name = ref<string>('')
+  const email = ref<string>('')
+  const password = ref<string>('')
+
   // === LOGIN ===
-  const fetchToken = async (email: string, password: string): Promise<void> => {
+  const fetchToken = async (emailInput: string, passwordInput: string): Promise<void> => {
     try {
+      console.log('🔁 Trying to log in...')
+
       const response = await fetch('https://daily-planner-kyar.onrender.com/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: emailInput, password: passwordInput }),
       })
 
-      const authResponse = await response.json()
+      let authResponse
+      try {
+        authResponse = await response.json()
+      } catch (jsonErr) {
+        throw new Error('Server returned invalid JSON. This may be caused by a CORS or internal error.')
+      }
 
       if (!response.ok) {
         throw new Error(authResponse.error || 'Login failed')
@@ -29,43 +41,73 @@ export const useUsers = () => {
       user.value = authResponse.data.user
       state.isLoggedIn = true
       localStorage.setItem('lsToken', authResponse.data.token)
+      localStorage.setItem('userIDToken', authResponse.data.userId)
 
       console.log('✅ User logged in:', authResponse)
       router.push('/my-day')
     } catch (err) {
-      error.value = (err as Error).message
+      const message = (err as Error).message || 'An error occurred during login'
+      error.value = message
       state.isLoggedIn = false
-      console.error('❌ Login error:', error.value)
+      console.error('❌ Login error:', message)
       throw err
     }
   }
 
   // === REGISTER ===
-  const registerUser = async (name: string, email: string, password: string): Promise<void> => {
+  const registerUser = async (
+    nameInput: string,
+    emailInput: string,
+    passwordInput: string
+  ): Promise<boolean> => {
     try {
+      console.log('🔁 Trying to register user...')
+
+      if (nameInput.length < 6) {
+        error.value = 'Name must be at least 6 characters long'
+        successMessage.value = null
+        console.warn('❌ Client-side validation failed:', error.value)
+        return false
+      }
+
       const response = await fetch('https://daily-planner-kyar.onrender.com/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name: nameInput, email: emailInput, password: passwordInput }),
       })
 
-      const authResponse = await response.json()
-
-      if (!response.ok) {
-        throw new Error(authResponse.error || 'Registration failed')
+      let authResponse
+      try {
+        authResponse = await response.json()
+      } catch (jsonErr) {
+        throw new Error('Server returned invalid JSON. This may be caused by a CORS or internal error.')
       }
 
-      token.value = authResponse.data.token
-      user.value = authResponse.data.user
-      state.isLoggedIn = true
-      localStorage.setItem('lsToken', authResponse.data.token)
+      console.log('🔍 Response status:', response.status)
+
+      if (!response.ok) {
+        error.value = authResponse.error || 'Registration failed'
+        successMessage.value = null
+        console.log('❌ Registration failed:', error.value)
+        return false
+      }
+
+      // Clear input
+      name.value = ''
+      email.value = ''
+      password.value = ''
+      error.value = null
+      successMessage.value = '🎉 Account successfully created! You can now log in.'
 
       console.log('✅ User registered:', authResponse)
-      router.push('/my-day')
+      router.push('/auth')
+      return true
     } catch (err) {
-      error.value = (err as Error).message
-      console.error('❌ Registration error:', error.value)
-      throw err
+      const message = (err as Error).message || 'An error occurred during registration'
+      error.value = message
+      successMessage.value = null
+      console.error('❌ Registration error:', message)
+      return false
     }
   }
 
@@ -75,12 +117,12 @@ export const useUsers = () => {
     user.value = null
     state.isLoggedIn = false
     localStorage.removeItem('lsToken')
-
+    localStorage.removeItem('userIDToken')
     console.log('👋 Logged out')
     router.push('/auth')
   }
 
-  // === CHECK LOGIN STATUS ON PAGE LOAD ===
+  // === CHECK LOGIN STATUS ===
   const checkLoginStatus = () => {
     const storedToken = localStorage.getItem('lsToken')
     if (storedToken) {
@@ -96,7 +138,11 @@ export const useUsers = () => {
   return {
     token,
     error,
+    successMessage,
     user,
+    name,
+    email,
+    password,
     isLoggedIn: state.isLoggedIn,
     fetchToken,
     registerUser,

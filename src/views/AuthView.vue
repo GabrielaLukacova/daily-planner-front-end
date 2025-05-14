@@ -25,6 +25,7 @@
           <input type="password" placeholder="Password" v-model="password" />
           <button @click.prevent="handleRegister">Register</button>
           <p v-if="registerError" class="error-msg">{{ registerError }}</p>
+          <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
         </div>
         <div v-else class="toggle-text">
           <h2>Don’t have an account?</h2>
@@ -43,10 +44,9 @@ import { ref } from 'vue'
 import { useUsers } from '../modules/auth/useUsers'
 import { useRouter } from 'vue-router'
 
-const { fetchToken, registerUser } = useUsers()
+const { fetchToken, registerUser, successMessage, error } = useUsers()
 const router = useRouter()
 
-// 👇 Locally defined reactive form fields (not in composable)
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -57,6 +57,8 @@ const registerError = ref<string | null>(null)
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value
+  loginError.value = null
+  registerError.value = null
 }
 
 const handleLogin = async () => {
@@ -72,18 +74,18 @@ const handleLogin = async () => {
 }
 
 const handleRegister = async () => {
-  try {
-    registerError.value = null
-    await registerUser(name.value, email.value, password.value)
+  registerError.value = null
+  const success = await registerUser(name.value, email.value, password.value)
+
+  if (success) {
     console.log('✅ Registered!')
-    router.push('/my-day')
-  } catch (err) {
-    registerError.value = 'Registration failed'
-    console.error('❌ Register error:', err)
+    // redirect eller vis melding her om ønskelig
+  } else {
+    registerError.value = error.value
+    console.error('❌ Register error:', registerError.value)
   }
 }
 </script>
-
 
 <style scoped>
 .auth-wrapper {
@@ -196,4 +198,11 @@ const handleRegister = async () => {
   font-size: 0.9rem;
   margin-top: -0.5rem;
 }
+
+.success-msg {
+  color: green;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
 </style>
+

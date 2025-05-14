@@ -26,49 +26,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useUsers } from '../modules/auth/useUsers';
+import { ref, onMounted } from 'vue'
 
-const editor = ref<HTMLElement | null>(null);
-const selectedSize = ref('18px');
-const text = ref('');
-const successMessage = ref<string | null>(null);
-const errorMessage = ref<string | null>(null);
+const editor = ref<HTMLElement | null>(null)
+const selectedSize = ref('18px')
+const text = ref('')
+const successMessage = ref<string | null>(null)
+const errorMessage = ref<string | null>(null)
 
 function toggleBold() {
-  document.execCommand('bold');
+  document.execCommand('bold')
 }
 
 function toggleBullet() {
-  document.execCommand('insertUnorderedList');
+  document.execCommand('insertUnorderedList')
 }
 
 function changeFontSize() {
   if (editor.value) {
-    editor.value.style.fontSize = selectedSize.value;
+    editor.value.style.fontSize = selectedSize.value
   }
 }
 
 function updateText() {
   if (editor.value) {
-    text.value = editor.value.innerHTML;
+    text.value = editor.value.innerHTML
+  }
+}
+
+async function fetchLatestNote() {
+  const token = localStorage.getItem('lsToken')
+  const userId = localStorage.getItem('userIDToken')
+
+  if (!token || !userId) return
+
+  try {
+    const response = await fetch(
+      `https://daily-planner-kyar.onrender.com/api/notes?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    if (!response.ok) throw new Error('Failed to fetch note.')
+
+    const notes = await response.json()
+    const latestNote = notes[0]
+    if (latestNote && editor.value) {
+      editor.value.innerHTML = latestNote.text
+      text.value = latestNote.text
+    }
+  } catch (err: any) {
+    console.error('❌ Error loading note:', err.message)
+    errorMessage.value = 'Failed to load saved note.'
   }
 }
 
 async function saveNote() {
-  const token = localStorage.getItem('lsToken');
-  const userId = localStorage.getItem('userIDToken');
+  const token = localStorage.getItem('lsToken')
+  const userId = localStorage.getItem('userIDToken')
 
   if (!token || !userId) {
-    errorMessage.value = 'You must be logged in to save notes.';
-    return;
+    errorMessage.value = 'You must be logged in to save notes.'
+    return
   }
 
   const noteData = {
     text: text.value,
     date: new Date().toISOString(),
     _createdBy: userId,
-  };
+  }
 
   try {
     const response = await fetch('https://daily-planner-kyar.onrender.com/api/notes', {
@@ -78,23 +107,27 @@ async function saveNote() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(noteData),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to save note.');
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to save note.')
     }
 
-    const saved = await response.json();
-    console.log('✅ Note saved:', saved);
-    successMessage.value = '✅ Note saved successfully!';
-    errorMessage.value = null;
+    const saved = await response.json()
+    console.log('✅ Note saved:', saved)
+    successMessage.value = '✅ Note saved successfully!'
+    errorMessage.value = null
   } catch (err: any) {
-    console.error('❌ Error saving note:', err.message);
-    errorMessage.value = err.message || 'An error occurred while saving.';
-    successMessage.value = null;
+    console.error('❌ Error saving note:', err.message)
+    errorMessage.value = err.message || 'An error occurred while saving.'
+    successMessage.value = null
   }
 }
+
+onMounted(() => {
+  fetchLatestNote()
+})
 </script>
 
 <style scoped>
@@ -145,6 +178,7 @@ async function saveNote() {
   min-height: 400px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   outline: none;
+  margin-bottom: 1rem;
 }
 
 .success-msg {
