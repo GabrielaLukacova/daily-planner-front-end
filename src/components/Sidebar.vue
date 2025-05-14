@@ -23,7 +23,6 @@
     { label: 'My day', to: '/my-day', icon: Home },
     { label: 'To do list', to: '/to-do-list', icon: ListTodo },
     { label: 'Notes', to: '/notes', icon: StickyNote },
-    { label: 'My profile', to: '/user-profile', icon: User },
     { label: 'Log out', to: '/auth', icon: LogOut },
   ]
   

@@ -27,11 +27,6 @@ const router = createRouter({
       name: 'notes',
       component: () => import('../views/Notes.vue'),
     },
-    {
-      path: '/user-profile',
-      name: 'user-profile',
-      component: () => import('../views/UserProfile.vue'),
-    },
   ],
 })
 
