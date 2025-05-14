@@ -15,7 +15,8 @@ export const useUsers = () => {
 
   const fetchToken = async (email: string, password: string): Promise<void> => {
     try {
-      const response = await fetch('https://ments-restapi.onrender.com/api/user/login', {
+      const response = await fetch('https://daily-planner-kyar.onrender.com/api/login', {
+
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +53,8 @@ export const useUsers = () => {
   // registerUser
   const registerUser = async (name: string, email: string, password: string): Promise<void> => {
     try {
-      const response = await fetch('https://ments-restapi.onrender.com/api/user/register', {
+      const response = await fetch('https://daily-planner-kyar.onrender.com/api/register', {
+
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
