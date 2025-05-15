@@ -1,13 +1,26 @@
-import { reactive, watch } from 'vue'
+// src/modules/globalStates/state.ts
+import { ref, watch, reactive } from 'vue'
 
-// initialize isLoggedIn from localStorage or default to false
-const isLoggedInFromtStorage = localStorage.getItem('isLoggedIn') === 'true'
-
+// ✅ Global login-state
+const isLoggedInFromStorage = localStorage.getItem('isLoggedIn') === 'true'
 export const state = reactive({
-  isLoggedIn: isLoggedInFromtStorage
+  isLoggedIn: isLoggedInFromStorage
+})
+watch(() => state.isLoggedIn, (val) => {
+  localStorage.setItem('isLoggedIn', String(val))
 })
 
-// watch for changes in isLoggedIn and update localStorage
-watch(() => state.isLoggedIn, (newValue) => {
-  localStorage.setItem('isLoggedIn', String(newValue))
+// ✅ Global selectedDate
+export const selectedDate = ref(new Date())
+
+// Oppdater fra localStorage ved oppstart
+const storedDate = localStorage.getItem('selectedNoteDate')
+if (storedDate) {
+  selectedDate.value = new Date(storedDate)
+}
+
+// Synkroniser med localStorage
+watch(selectedDate, (newVal) => {
+  localStorage.setItem('selectedNoteDate', newVal.toISOString())
 })
+

@@ -47,11 +47,11 @@ const formattedDate = computed(() =>
 )
 
 function toggleBold() {
-  document.execCommand('bold')
+  document.execCommand('bold');
 }
 
 function toggleBullet() {
-  document.execCommand('insertUnorderedList')
+  document.execCommand('insertUnorderedList');
 }
 
 function changeFontSize() {
@@ -238,7 +238,6 @@ watch(() => props.selectedDate, fetchNoteForDate)
 .success-msg {
   color: green;
   font-weight: bold;
-  margin-top: 1rem;
 }
 
 .error-msg {
