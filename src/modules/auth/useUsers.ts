@@ -4,11 +4,6 @@ import { state } from '../globalStates/state'
 import { useRouter } from 'vue-router'
 
 export const useUsers = () => {
-  // Global auth state
-  const token = ref<string | null>(null);
-  const error = ref<string | null>(null);
-  const successMessage = ref<string | null>(null);
-  const user = ref<User | null>(null);
   const router = useRouter()
 
   const token = ref<string | null>(localStorage.getItem('lsToken'))
@@ -116,7 +111,7 @@ export const useUsers = () => {
     }
   }
 
-  // === LOGOUT FUNCTION ===
+  // === LOGOUT ===
   const logout = () => {
     token.value = null
     user.value = null
