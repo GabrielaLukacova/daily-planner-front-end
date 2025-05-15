@@ -61,103 +61,95 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import axios from "axios";
-import confetti from "canvas-confetti";
-import type { Task } from "../interfaces/interfaces";
-
-const userId = localStorage.getItem("userIDToken") ?? "";
+import { ref, computed, onMounted } from "vue"
+import axios from "axios"
+import confetti from "canvas-confetti"
+import type { Task } from "../interfaces/interfaces"
 
 // Extend Task with _id and local editing state
-type TaskWithLocalState = Task & { _id: string; editing?: boolean };
-const newTask = ref("");
-const tasks = ref<TaskWithLocalState[]>([]);
+type TaskWithLocalState = Task & { _id: string; editing?: boolean }
+
+const newTask = ref("")
+const tasks = ref<TaskWithLocalState[]>([])
+
+const token = localStorage.getItem("lsToken") ?? ""
+const userId = localStorage.getItem("userIDToken") ?? ""
 
 const api = axios.create({
   baseURL: "https://daily-planner-kyar.onrender.com/api/tasks",
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("lsToken") ?? ""}`,
+    Authorization: `Bearer ${token}`,
   },
-});
+})
 
-onMounted(fetchTasks);
+onMounted(fetchTasks)
 
 async function fetchTasks() {
+  if (!userId) return
   try {
-    const response = await api.get("/");
+    const response = await api.get("/", {
+      params: { userId }
+    })
     tasks.value = response.data.map((task: TaskWithLocalState) => ({
       ...task,
       editing: false,
-    }));
+    }))
   } catch (err) {
-    console.error("Failed to fetch tasks", err);
+    console.error("Failed to fetch tasks", err)
   }
 }
 
 async function addTask() {
-  const taskText = newTask.value.trim();
-  const token = localStorage.getItem("lsToken");
-  const userId = localStorage.getItem("userIDToken");
-
-  console.log("➡️ Triggered addTask()");
-  console.log("📝 Task:", taskText);
-  console.log("👤 User ID:", userId);
-  console.log("🔐 Token:", token);
-
-  if (!taskText || !userId || !token) {
-    console.warn("❌ Missing required fields");
-    return;
-  }
+  const taskText = newTask.value.trim()
+  if (!taskText || !userId || !token) return
 
   try {
     const res = await axios.post(
       "https://daily-planner-kyar.onrender.com/api/tasks",
       {
         title: taskText,
-        _createdBy: userId,      // Make sure userId is correctly fetched
-        isCompleted: false,      // Default value
-        highPriority: false,     // Default value
+        _createdBy: userId,
+        isCompleted: false,
+        highPriority: false,
       },
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
-    );
-    console.log("✅ Task created:", res.data);
-    tasks.value.push({ ...res.data, editing: false });
-    newTask.value = "";
+    )
+    tasks.value.push({ ...res.data, editing: false })
+    newTask.value = ""
   } catch (err: any) {
-    console.error("🚨 Failed to add task:", err?.response?.data || err.message);
+    console.error("🚨 Failed to add task:", err?.response?.data || err.message)
   }
 }
 
-
 async function completeTask(task: TaskWithLocalState) {
-  task.isCompleted = !task.isCompleted;
-  await updateTask(task);
+  task.isCompleted = !task.isCompleted
+  await updateTask(task)
 
   if (task.isCompleted) {
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-    });
+    })
   }
 }
 
 async function togglePriority(task: TaskWithLocalState) {
-  task.highPriority = !task.highPriority;
-  await updateTask(task);
+  task.highPriority = !task.highPriority
+  await updateTask(task)
 }
 
 function editTask(task: TaskWithLocalState) {
-  task.editing = true;
+  task.editing = true
 }
 
 async function saveEdit(task: TaskWithLocalState) {
-  task.editing = false;
-  await updateTask(task);
+  task.editing = false
+  await updateTask(task)
 }
 
 async function updateTask(task: TaskWithLocalState) {
@@ -166,25 +158,28 @@ async function updateTask(task: TaskWithLocalState) {
       title: task.title,
       isCompleted: task.isCompleted,
       highPriority: task.highPriority,
-    });
+    })
   } catch (err) {
-    console.error("Failed to update task", err);
+    console.error("Failed to update task", err)
   }
 }
 
 async function deleteTask(taskId: string) {
   try {
-    await api.delete(`/${taskId}`);
-    tasks.value = tasks.value.filter((t) => t._id !== taskId);
+    await api.delete(`/${taskId}`)
+    tasks.value = tasks.value.filter((t) => t._id !== taskId)
   } catch (err) {
-    console.error("Failed to delete task", err);
+    console.error("Failed to delete task", err)
   }
 }
 
 const sortedTasks = computed(() => {
-  return [...tasks.value].sort((a, b) => Number(b.highPriority) - Number(a.highPriority));
-});
+  return [...tasks.value].sort(
+    (a, b) => Number(b.highPriority) - Number(a.highPriority)
+  )
+})
 </script>
+
 
 
 <style scoped>
