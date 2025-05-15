@@ -1,7 +1,7 @@
 <template>
   <div class="todo-wrapper">
     <div class="todo-container">
-      <h1 class="title">My To-Do List</h1>
+      <h1 class="title">My to-do list</h1>
 
       <div class="input-group">
         <input

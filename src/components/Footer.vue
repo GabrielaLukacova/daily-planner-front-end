@@ -10,7 +10,7 @@
       />
 
       <p class="quote">
-        Because every great day deserves a great plan.
+        Because every great day deserves a great plan!
       </p>
 
       <div class="accent-line"></div>

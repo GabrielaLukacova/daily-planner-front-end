@@ -90,7 +90,7 @@ function selectDate(date: Date) {
 }
 
 .month-year {
-  font-size: 28px;
+  font-size: 30px;
   margin-bottom: 12px;
   text-align: center;
   color: #111;
@@ -145,11 +145,11 @@ function selectDate(date: Date) {
 }
 
 .day-number {
-  font-size: 22px;
+  font-size: 30px;
 }
 
 .day-name {
-  font-size: 14px;
+  font-size: 20px;
   opacity: 0.7;
 }
 </style>

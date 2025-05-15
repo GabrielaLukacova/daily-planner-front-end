@@ -1,19 +1,19 @@
 <template>
   <div class="activity-modal">
     <div class="activity-box">
-      <h2>🕒 Add Activity</h2>
+      <h2>🕒 Add activity</h2>
 
       <input v-model="activity.title" placeholder="Title *" class="modern-input" />
 
       <div class="time-selection">
-        <label>Start Time</label>
+        <label>Start time</label>
         <div class="time-options">
           <input v-model="activity.startTime" type="time" class="modern-input" />
         </div>
       </div>
 
       <div class="duration-selection">
-        <label>End Time</label>
+        <label>End time</label>
         <div class="time-options">
           <input v-model="activity.endTime" type="time" class="modern-input" />
         </div>

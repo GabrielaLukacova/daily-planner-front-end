@@ -79,13 +79,23 @@ a {
   transition: background-color 0.2s ease;
   text-decoration: none;
   color: black;
+  font-size: 1.1rem;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.2rem 2rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
   font-size: 1.2rem;
-}
-
-a:hover {
-  background-color: #e0decb; 
   color: black;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
 }
-
   </style>
   

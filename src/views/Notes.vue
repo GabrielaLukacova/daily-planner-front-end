@@ -9,7 +9,6 @@
         <option value="24px">Large</option>
         <option value="32px">Huge</option>
       </select>
-      <button @click="saveNote">Save</button>
     </div>
 
     <div
@@ -19,6 +18,9 @@
       @input="updateText"
       :style="{ fontSize: selectedSize }"
     ></div>
+    <div class="save-button-container">
+  <button @click="saveNote" class="button-save">Save</button>
+</div>
 
     <p class="date-info">Note for: {{ formattedDate }}</p>
     <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
@@ -189,5 +191,23 @@ watch(selectedDate, fetchNote)
   color: #666;
   margin-bottom: 1rem;
 }
+
+.save-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.button-save {
+  background-color: #FAD809;
+  color: black;
+  font-weight: bold;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
 </style>
 
