@@ -1,6 +1,9 @@
 <template>
   <div class="calendar">
-    <div class="month-year">{{ formattedMonthYear }}</div>
+    <div class="month-year">
+      {{ formattedMonthYear }}
+    </div>
+
     <div class="week-days">
       <button class="arrow" @click="prevWeek">←</button>
       <div class="days">
@@ -8,8 +11,8 @@
           v-for="(day, index) in weekDays"
           :key="index"
           class="day"
-          :class="{ today: isToday(day.date) }"
-          @click="selectDay(day.date)"
+          :class="{ today: isToday(day.date), selected: isSelected(day.date) }"
+          @click="selectDate(day.date)"
         >
           <div class="day-name">{{ day.label }}</div>
           <div class="day-number">{{ day.date.getDate() }}</div>
@@ -20,32 +23,65 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import { format, startOfWeek, addDays, subWeeks, addWeeks, isSameDay } from 'date-fns'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import {
+  format,
+  startOfWeek,
+  addDays,
+  subWeeks,
+  addWeeks,
+  isSameDay,
+} from 'date-fns'
 
-const emit = defineEmits(['day-selected'])
+import { selectedDate } from '@/modules/globalStates/state' // 👈 viktig!
 
 const currentDate = ref(new Date())
-const formattedMonthYear = computed(() => format(currentDate.value, 'MMMM yyyy'))
 
-const startOfCurrentWeek = computed(() => startOfWeek(currentDate.value, { weekStartsOn: 1 }))
+// Sett valgt dato fra localStorage ved oppstart
+onMounted(() => {
+  const stored = localStorage.getItem('selectedNoteDate')
+  if (stored) selectedDate.value = new Date(stored)
+})
 
+// Vis valgt måned og år
+const formattedMonthYear = computed(() =>
+  format(currentDate.value, 'MMMM yyyy')
+)
+
+// Startdato for uke
+const startOfCurrentWeek = computed(() =>
+  startOfWeek(currentDate.value, { weekStartsOn: 1 })
+)
+
+// Ukedager
 const weekDays = computed(() => {
   const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(startOfCurrentWeek.value, i)
-    return { label: labels[i], date }
+    return {
+      label: labels[i],
+      date,
+    }
   })
 })
 
-function selectDay(date) {
-  emit('day-selected', date)
+// Funksjoner
+const isToday = (date: Date) => isSameDay(date, new Date())
+const isSelected = (date: Date) => isSameDay(date, selectedDate.value)
+
+function prevWeek() {
+  currentDate.value = subWeeks(currentDate.value, 1)
 }
 
-const isToday = (date) => isSameDay(date, new Date())
-const prevWeek = () => (currentDate.value = subWeeks(currentDate.value, 1))
-const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
+function nextWeek() {
+  currentDate.value = addWeeks(currentDate.value, 1)
+}
+
+function selectDate(date: Date) {
+  selectedDate.value = date
+  localStorage.setItem('selectedNoteDate', date.toISOString())
+}
 </script>
 
 <style scoped>
@@ -76,7 +112,6 @@ const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
   color: #333;
   transition: transform 0.2s;
 }
-
 .arrow:hover {
   transform: scale(1.2);
 }
@@ -85,8 +120,8 @@ const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2rem;
-  max-width: 800px;
   width: 100%;
+  max-width: 800px;
 }
 
 .day {
@@ -96,8 +131,8 @@ const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
   justify-content: center;
   border-radius: 10px;
   height: 85px;
-  transition: background-color 0.3s;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .day.today {
@@ -105,8 +140,8 @@ const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
 }
 
 .day.selected {
-  background-color: #d6f0ff;
-  border: 2px solid #007acc;
+  background-color: #cb4540;
+  color: white;
 }
 
 .day-number {
@@ -118,4 +153,3 @@ const nextWeek = () => (currentDate.value = addWeeks(currentDate.value, 1))
   opacity: 0.7;
 }
 </style>
-

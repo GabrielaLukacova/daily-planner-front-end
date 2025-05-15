@@ -12,10 +12,6 @@
       <button @click="saveNote">Save</button>
     </div>
 
-    <div class="note-date-display">
-      Note for: {{ formattedDate }}
-    </div>
-
     <div
       class="note-editor"
       contenteditable
@@ -24,27 +20,69 @@
       :style="{ fontSize: selectedSize }"
     ></div>
 
+    <p class="date-info">Note for: {{ formattedDate }}</p>
     <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
     <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, defineProps } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
+import { selectedDate } from '@/modules/globalStates/state'
 import { format } from 'date-fns'
-import type { Note } from '@/interfaces/interfaces'
 
-const props = defineProps<{ selectedDate?: Date }>()
 const editor = ref<HTMLElement | null>(null)
 const selectedSize = ref('18px')
 const text = ref('')
 const successMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
 
-const effectiveDate = computed(() => props.selectedDate || new Date())
+const token = ref('')
+const userId = ref('')
+
 const formattedDate = computed(() =>
-  format(effectiveDate.value, 'EEEE, d MMMM yyyy')
+  format(selectedDate.value, 'EEEE, d MMMM yyyy')
 )
+
+async function fetchNote() {
+  if (!token.value || !userId.value) return
+
+  try {
+    const res = await fetch(
+      `https://daily-planner-kyar.onrender.com/api/notes?userId=${userId.value}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      }
+    )
+
+    if (!res.ok) throw new Error(`Failed to fetch notes. Status: ${res.status}`)
+    const notes = await res.json()
+
+    const match = notes.find(
+      (n: any) =>
+        new Date(n.date).toDateString() === selectedDate.value.toDateString()
+    )
+
+    if (match && editor.value) {
+      editor.value.innerHTML = match.text
+      text.value = match.text
+    } else {
+      if (editor.value) editor.value.innerHTML = ''
+      text.value = ''
+    }
+  } catch (err: any) {
+    console.error('❌ Load error:', err.message)
+    errorMessage.value = 'Failed to load saved note.'
+  }
+}
+
+function updateText() {
+  if (editor.value) {
+    text.value = editor.value.innerHTML
+  }
+}
 
 function toggleBold() {
   document.execCommand('bold')
@@ -55,98 +93,55 @@ function toggleBullet() {
 }
 
 function changeFontSize() {
-  if (editor.value) {
-    editor.value.style.fontSize = selectedSize.value
-  }
-}
-
-function updateText() {
-  if (editor.value) {
-    text.value = editor.value.innerHTML
-  }
-}
-
-async function fetchNoteForDate() {
-  const token = localStorage.getItem('lsToken')
-  const userId = localStorage.getItem('userIDToken')
-  if (!token || !userId) return
-
-  try {
-    const response = await fetch(
-      `https://daily-planner-kyar.onrender.com/api/notes?userId=${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    if (!response.ok) throw new Error('Failed to fetch notes.')
-
-    const notes: Note[] = await response.json()
-    const match = notes.find((n) =>
-      new Date(n.date).toDateString() === effectiveDate.value.toDateString()
-    )
-
-    if (editor.value) {
-      editor.value.innerHTML = match ? match.text : ''
-      text.value = match ? match.text : ''
-    }
-  } catch (err: any) {
-    console.error('❌ Error loading note:', err.message)
-    errorMessage.value = 'Failed to load saved note.'
-  }
+  if (editor.value) editor.value.style.fontSize = selectedSize.value
 }
 
 async function saveNote() {
-  const token = localStorage.getItem('lsToken')
-  const userId = localStorage.getItem('userIDToken')
-  if (!token || !userId) {
+  if (!token.value || !userId.value) {
     errorMessage.value = 'You must be logged in to save notes.'
     return
   }
 
   const noteData = {
     text: text.value,
-    date: effectiveDate.value.toISOString(),
-    _createdBy: userId,
+    date: selectedDate.value.toISOString(),
+    _createdBy: userId.value,
   }
 
   try {
-    const response = await fetch('https://daily-planner-kyar.onrender.com/api/notes', {
+    const res = await fetch('https://daily-planner-kyar.onrender.com/api/notes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token.value}`,
       },
       body: JSON.stringify(noteData),
     })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Failed to save note.')
-    }
+    if (!res.ok) throw new Error('Failed to save note.')
 
-    const saved = await response.json()
+    const saved = await res.json()
     console.log('✅ Note saved:', saved)
-    successMessage.value = '✅ Note saved successfully!'
+    successMessage.value = '✅ Note saved!'
     errorMessage.value = null
   } catch (err: any) {
-    console.error('❌ Error saving note:', err.message)
-    errorMessage.value = err.message || 'An error occurred while saving.'
+    errorMessage.value = err.message
     successMessage.value = null
   }
 }
 
-onMounted(fetchNoteForDate)
-watch(() => props.selectedDate, fetchNoteForDate)
+onMounted(() => {
+  token.value = localStorage.getItem('lsToken') || ''
+  userId.value = localStorage.getItem('userIDToken') || ''
+  fetchNote()
+})
+
+watch(selectedDate, fetchNote)
 </script>
 
 <style scoped>
 .note-page {
-  min-height: 100vh;
   padding: 2rem;
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #333;
   width: calc(100% - 36rem);
   padding-left: 24rem;
 }
@@ -161,32 +156,14 @@ watch(() => props.selectedDate, fetchNoteForDate)
   align-items: center;
 }
 
-.note-toolbar button {
+.note-toolbar button,
+.note-toolbar select {
   background: white;
   border: none;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-.note-toolbar button:hover {
-  background: #f0f0f0;
-}
-
-.note-toolbar select {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: none;
-  background: white;
-}
-
-.note-date-display {
-  font-size: 16px;
-  margin-bottom: 1rem;
-  font-weight: 500;
-  color: #666;
 }
 
 .note-editor {
@@ -202,12 +179,15 @@ watch(() => props.selectedDate, fetchNoteForDate)
 .success-msg {
   color: green;
   font-weight: bold;
-  margin-top: 1rem;
 }
-
 .error-msg {
   color: red;
   font-weight: bold;
-  margin-top: 1rem;
+}
+.date-info {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
 }
 </style>
+
