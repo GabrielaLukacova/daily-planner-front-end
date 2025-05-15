@@ -12,6 +12,10 @@
       <button @click="saveNote">Save</button>
     </div>
 
+    <div class="note-date-display">
+      Note for: {{ formattedDate }}
+    </div>
+
     <div
       class="note-editor"
       contenteditable
@@ -26,13 +30,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed, defineProps } from 'vue'
+import { format } from 'date-fns'
+import type { Note } from '@/interfaces/interfaces'
 
+const props = defineProps<{ selectedDate?: Date }>()
 const editor = ref<HTMLElement | null>(null)
 const selectedSize = ref('18px')
 const text = ref('')
 const successMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
+
+const effectiveDate = computed(() => props.selectedDate || new Date())
+const formattedDate = computed(() =>
+  format(effectiveDate.value, 'EEEE, d MMMM yyyy')
+)
 
 function toggleBold() {
   document.execCommand('bold')
@@ -54,10 +66,9 @@ function updateText() {
   }
 }
 
-async function fetchLatestNote() {
+async function fetchNoteForDate() {
   const token = localStorage.getItem('lsToken')
   const userId = localStorage.getItem('userIDToken')
-
   if (!token || !userId) return
 
   try {
@@ -69,14 +80,16 @@ async function fetchLatestNote() {
         },
       }
     )
+    if (!response.ok) throw new Error('Failed to fetch notes.')
 
-    if (!response.ok) throw new Error('Failed to fetch note.')
+    const notes: Note[] = await response.json()
+    const match = notes.find((n) =>
+      new Date(n.date).toDateString() === effectiveDate.value.toDateString()
+    )
 
-    const notes = await response.json()
-    const latestNote = notes[0]
-    if (latestNote && editor.value) {
-      editor.value.innerHTML = latestNote.text
-      text.value = latestNote.text
+    if (editor.value) {
+      editor.value.innerHTML = match ? match.text : ''
+      text.value = match ? match.text : ''
     }
   } catch (err: any) {
     console.error('❌ Error loading note:', err.message)
@@ -87,7 +100,6 @@ async function fetchLatestNote() {
 async function saveNote() {
   const token = localStorage.getItem('lsToken')
   const userId = localStorage.getItem('userIDToken')
-
   if (!token || !userId) {
     errorMessage.value = 'You must be logged in to save notes.'
     return
@@ -95,7 +107,7 @@ async function saveNote() {
 
   const noteData = {
     text: text.value,
-    date: new Date().toISOString(),
+    date: effectiveDate.value.toISOString(),
     _createdBy: userId,
   }
 
@@ -125,9 +137,8 @@ async function saveNote() {
   }
 }
 
-onMounted(() => {
-  fetchLatestNote()
-})
+onMounted(fetchNoteForDate)
+watch(() => props.selectedDate, fetchNoteForDate)
 </script>
 
 <style scoped>
@@ -169,6 +180,13 @@ onMounted(() => {
   border-radius: 6px;
   border: none;
   background: white;
+}
+
+.note-date-display {
+  font-size: 16px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #666;
 }
 
 .note-editor {
