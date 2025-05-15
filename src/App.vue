@@ -16,6 +16,11 @@
         <RouterView :selectedDate="selectedDate" />
       </main>
     </div>
+       
+    <!-- Footer -->
+<div v-if="route.name !== 'auth'">
+  <Footer />
+</div>
   </div>
 </template>
 
@@ -23,9 +28,11 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
+import Footer from '@/components/Footer.vue'
 import WeekDays from '@/components/WeekDays.vue'
 import { useUsers } from './modules/auth/useUsers'
 import { state } from './modules/globalStates/state'
+
 
 const { logout } = useUsers()
 const route = useRoute()
