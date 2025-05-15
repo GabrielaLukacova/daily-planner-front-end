@@ -9,7 +9,6 @@
         <option value="24px">Large</option>
         <option value="32px">Huge</option>
       </select>
-      <button @click="saveNote">Save</button>
     </div>
 
     <div class="note-date-display">
@@ -23,6 +22,7 @@
       @input="updateText"
       :style="{ fontSize: selectedSize }"
     ></div>
+    <button class="save-btn" @click="saveNote">Save</button>
 
     <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
     <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
@@ -162,17 +162,53 @@ watch(() => props.selectedDate, fetchNoteForDate)
 }
 
 .note-toolbar button {
-  background: white;
+  background: #fff;
+  color: #111;
+  font-weight: 500; /* normal weight for all buttons except B */
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background-color 0.3s, transform 0.2s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
+/* Specifically style the B button text to be bold */
+.note-toolbar button:first-child strong {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Style the list button to have a bullet and normal font weight */
+.note-toolbar button:nth-child(2) {
+  font-weight: 500;
+}
+
+/* Hover effect for all buttons */
 .note-toolbar button:hover {
-  background: #f0f0f0;
+  background-color:  #fad809;
+  transform: scale(1.05);
+}
+
+.save-btn {
+  float: right;
+  background: #fad809;
+  color: #111;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.save-btn:hover {
+  background: #f5c600;
 }
 
 .note-toolbar select {
