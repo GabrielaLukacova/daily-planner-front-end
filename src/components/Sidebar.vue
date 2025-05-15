@@ -25,23 +25,23 @@
   
   <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { useUsers } from '../modules/auth/useUsers' // ✅ Add this
+import { useUsers } from '../modules/auth/useUsers' 
 import { Home, ListTodo, StickyNote, User, LogOut } from 'lucide-vue-next'
 
-const { logout } = useUsers(); // ✅ Access logout function
+const { logout } = useUsers(); 
 const route = useRoute()
 
 const navItems = [
   { label: 'My day', to: '/my-day', icon: Home },
   { label: 'To do list', to: '/to-do-list', icon: ListTodo },
   { label: 'Notes', to: '/notes', icon: StickyNote },
-  { label: 'Log out', to: null, icon: LogOut }, // No route, it's an action
+  { label: 'Log out', to: null, icon: LogOut }, 
 ]
 
 const isActiveRoute = (path: string) => route.path === path
 
 const handleLogout = () => {
-  logout(); // ✅ Calls the real logout logic
+  logout(); 
 }
   </script>
   
@@ -59,9 +59,19 @@ const handleLogout = () => {
   padding:  5rem 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   position: fixed;
-
-z-index: 50;
-  
+  z-index: 50;
+}
+button {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.2rem 2rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
+  color: black;
+  font-size: 1.1rem;
 }
 
 .router-link-active,
@@ -79,13 +89,7 @@ a {
   transition: background-color 0.2s ease;
   text-decoration: none;
   color: black;
-  font-size: 1.2rem;
-}
-
-a:hover {
-  background-color: #e0decb; 
-  color: black;
+  font-size: 1.1rem;
 }
 
   </style>
-  

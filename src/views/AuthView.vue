@@ -1,5 +1,6 @@
 <template>
   <div class="auth-wrapper">
+    <img src="@/media/planit_app_logo.jpeg" alt="App Logo" class="auth-logo" />
     <div :class="['auth-container', isSignup ? 'signup-mode' : '']">
       <!-- Left Box (Login) -->
       <div class="form-box left-box">
@@ -87,12 +88,32 @@ const handleRegister = async () => {
 }
 </script>
 
+<style>
+body {
+  background-color: #fff;
+}
+</style>
+
 <style scoped>
+
+
 .auth-wrapper {
+  position: relative;   
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 15rem;
+  margin-top: 5rem; 
+  padding-top: 120px; 
+}
+
+.auth-logo {
+  position: absolute;
+  top: 0;  
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: auto;
+  z-index: 10;
 }
 
 .auth-container {

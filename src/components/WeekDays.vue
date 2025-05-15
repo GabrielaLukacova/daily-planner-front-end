@@ -128,28 +128,71 @@ function selectDate(date: Date) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-radius: 10px;
   height: 85px;
   cursor: pointer;
-  transition: background-color 0.3s;
+
+  transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, color 0.3s;
+  background-color: white;
+  color: #111;
+  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  position: relative;
 }
 
-.day.today {
-  background-color: #fad809;
+.day::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;  
+  background-color: #F4F3EB;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  z-index: 0;
 }
 
-.day.selected {
-  background-color: #cb4540;
-  color: white;
-}
-
+.day-name,
 .day-number {
-  font-size: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.day.selected,
+.day.today.selected {
+  border-color: #fadb09cc;
+}
+
+.day.today:not(.selected)::before {
+  background-color: #fad809;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.day:not(.selected):not(.today) {
+  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.1);
+  border-color: transparent;
+  color: #111;
 }
 
 .day-name {
-  font-size: 14px;
+  font-size: 18px;
   opacity: 0.7;
+  width: 100%;
+  text-align: center;
+  padding: 4px 0;
+  user-select: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
+
+.day-number {
+  font-size: 24px;
+  margin-top: 4px;
+  user-select: none;
+}
+
+
 </style>
