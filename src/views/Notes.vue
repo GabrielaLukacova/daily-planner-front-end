@@ -9,6 +9,7 @@
         <option value="24px">Large</option>
         <option value="32px">Huge</option>
       </select>
+      <button @click="saveNote">Save</button>
     </div>
 
     <div
@@ -18,46 +19,129 @@
       @input="updateText"
       :style="{ fontSize: selectedSize }"
     ></div>
+
+    <p class="date-info">Note for: {{ formattedDate }}</p>
+    <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
+    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue'
+import { selectedDate } from '@/modules/globalStates/state'
+import { format } from 'date-fns'
 
-const editor = ref<HTMLElement | null>(null);
-const selectedSize = ref('18px');
-const text = ref('');
+const editor = ref<HTMLElement | null>(null)
+const selectedSize = ref('18px')
+const text = ref('')
+const successMessage = ref<string | null>(null)
+const errorMessage = ref<string | null>(null)
 
-function toggleBold() {
-  document.execCommand('bold');
-}
+const token = ref('')
+const userId = ref('')
 
-function toggleBullet() {
-  document.execCommand('insertUnorderedList');
-}
+const formattedDate = computed(() =>
+  format(selectedDate.value, 'EEEE, d MMMM yyyy')
+)
 
-function changeFontSize() {
-  if (editor.value) {
-    editor.value.style.fontSize = selectedSize.value;
+async function fetchNote() {
+  if (!token.value || !userId.value) return
+
+  try {
+    const res = await fetch(
+      `https://daily-planner-kyar.onrender.com/api/notes?userId=${userId.value}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      }
+    )
+
+    if (!res.ok) throw new Error(`Failed to fetch notes. Status: ${res.status}`)
+    const notes = await res.json()
+
+    const match = notes.find(
+      (n: any) =>
+        new Date(n.date).toDateString() === selectedDate.value.toDateString()
+    )
+
+    if (match && editor.value) {
+      editor.value.innerHTML = match.text
+      text.value = match.text
+    } else {
+      if (editor.value) editor.value.innerHTML = ''
+      text.value = ''
+    }
+  } catch (err: any) {
+    console.error('❌ Load error:', err.message)
+    errorMessage.value = 'Failed to load saved note.'
   }
 }
 
 function updateText() {
   if (editor.value) {
-    text.value = editor.value.innerHTML;
+    text.value = editor.value.innerHTML
+  }
+}
+
+function toggleBold() {
+  document.execCommand('bold')
+}
+
+function toggleBullet() {
+  document.execCommand('insertUnorderedList')
+}
+
+function changeFontSize() {
+  if (editor.value) editor.value.style.fontSize = selectedSize.value
+}
+
+async function saveNote() {
+  if (!token.value || !userId.value) {
+    errorMessage.value = 'You must be logged in to save notes.'
+    return
+  }
+
+  const noteData = {
+    text: text.value,
+    date: selectedDate.value.toISOString(),
+    _createdBy: userId.value,
+  }
+
+  try {
+    const res = await fetch('https://daily-planner-kyar.onrender.com/api/notes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`,
+      },
+      body: JSON.stringify(noteData),
+    })
+
+    if (!res.ok) throw new Error('Failed to save note.')
+
+    const saved = await res.json()
+    console.log('✅ Note saved:', saved)
+    successMessage.value = '✅ Note saved!'
+    errorMessage.value = null
+  } catch (err: any) {
+    errorMessage.value = err.message
+    successMessage.value = null
   }
 }
 
 onMounted(() => {
-});
+  token.value = localStorage.getItem('lsToken') || ''
+  userId.value = localStorage.getItem('userIDToken') || ''
+  fetchNote()
+})
+
+watch(selectedDate, fetchNote)
 </script>
 
 <style scoped>
 .note-page {
-  min-height: 100vh;
   padding: 2rem;
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #333;
   width: calc(100% - 36rem);
   padding-left: 24rem;
 }
@@ -72,25 +156,14 @@ onMounted(() => {
   align-items: center;
 }
 
-.note-toolbar button {
+.note-toolbar button,
+.note-toolbar select {
   background: white;
   border: none;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-.note-toolbar button:hover {
-  background: #f0f0f0;
-}
-
-.note-toolbar select {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: none;
-  background: white;
 }
 
 .note-editor {
@@ -100,7 +173,21 @@ onMounted(() => {
   min-height: 400px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   outline: none;
+  margin-bottom: 1rem;
+}
+
+.success-msg {
+  color: green;
+  font-weight: bold;
+}
+.error-msg {
+  color: red;
+  font-weight: bold;
+}
+.date-info {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
 }
 </style>
 
-  

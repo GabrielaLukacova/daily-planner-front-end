@@ -44,18 +44,13 @@ import { ref } from 'vue'
 import { useUsers } from '../modules/auth/useUsers'
 import { useRouter } from 'vue-router'
 
-const {
-  fetchToken,
-  registerUser,
-  name,
-  email,
-  password,
-  error,
-  successMessage
-} = useUsers()
-
-const isSignup = ref(false)
+const { fetchToken, registerUser, successMessage, error } = useUsers()
 const router = useRouter()
+
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const isSignup = ref(false)
 
 const loginError = ref<string | null>(null)
 const registerError = ref<string | null>(null)
@@ -64,7 +59,6 @@ const toggleMode = () => {
   isSignup.value = !isSignup.value
   loginError.value = null
   registerError.value = null
-  successMessage.value = null
 }
 
 const handleLogin = async () => {
@@ -81,17 +75,12 @@ const handleLogin = async () => {
 const handleRegister = async () => {
   try {
     registerError.value = null
-    successMessage.value = null
     await registerUser(name.value, email.value, password.value)
-
-    if (successMessage.value) {
-      console.log('✅ Registered!')
-    } else {
-      registerError.value = error.value || 'Registration failed'
-    }
+    console.log('✅ Registered!')
+    router.push('/my-day')
   } catch (err) {
-    registerError.value = error.value || 'Registration failed'
-    console.error('❌ Register error:', registerError.value)
+    registerError.value = 'Registration failed'
+    console.error('❌ Register error:', err)
   }
 }
 </script>
@@ -214,3 +203,4 @@ const handleRegister = async () => {
   margin-top: -0.5rem;
 }
 </style>
+

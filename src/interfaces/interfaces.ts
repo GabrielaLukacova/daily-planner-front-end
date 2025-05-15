@@ -28,10 +28,12 @@ export interface Activity {
 }
 
 export interface Note {
+  _id?: string;       
   text: string;
   date: Date;
   _createdBy: string;
-  }
+}
+
 
   export interface Task{
     title: string;

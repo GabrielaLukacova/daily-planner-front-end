@@ -1,8 +1,8 @@
 <template>
-    <aside class="w-64 h-screen bg-gray-800 text-white fixed left-0 top-0 flex flex-col p-6 space-y-4">
+  <aside class="w-64 h-screen bg-gray-800 text-white fixed left-0 top-0 flex flex-col p-6 space-y-4">
+    <template v-for="item in navItems" :key="item.label">
       <RouterLink
-        v-for="item in navItems"
-        :key="item.to"
+        v-if="item.to"
         :to="item.to"
         class="flex items-center space-x-2 p-3 rounded-md hover:bg-yellow-400 hover:text-black"
         :class="{ 'bg-yellow-400 text-black': isActiveRoute(item.to) }"
@@ -10,23 +10,39 @@
         <component :is="item.icon" class="w-5 h-5" />
         <span>{{ item.label }}</span>
       </RouterLink>
-    </aside>
-  </template>
+
+      <button
+        v-else
+        @click="handleLogout"
+        class="flex items-center space-x-2 p-3 rounded-md hover:bg-yellow-400 hover:text-black"
+      >
+        <component :is="item.icon" class="w-5 h-5" />
+        <span>{{ item.label }}</span>
+      </button>
+    </template>
+  </aside>
+</template>
   
   <script setup lang="ts">
-  import { useRoute } from 'vue-router'
-  import { Home, ListTodo, StickyNote, User, LogOut } from 'lucide-vue-next'
-  
-  const route = useRoute()
-  
-  const navItems = [
-    { label: 'My day', to: '/my-day', icon: Home },
-    { label: 'To do list', to: '/to-do-list', icon: ListTodo },
-    { label: 'Notes', to: '/notes', icon: StickyNote },
-    { label: 'Log out', to: '/auth', icon: LogOut },
-  ]
-  
-  const isActiveRoute = (path: string) => route.path === path
+import { useRoute } from 'vue-router'
+import { useUsers } from '../modules/auth/useUsers' // ✅ Add this
+import { Home, ListTodo, StickyNote, User, LogOut } from 'lucide-vue-next'
+
+const { logout } = useUsers(); // ✅ Access logout function
+const route = useRoute()
+
+const navItems = [
+  { label: 'My day', to: '/my-day', icon: Home },
+  { label: 'To do list', to: '/to-do-list', icon: ListTodo },
+  { label: 'Notes', to: '/notes', icon: StickyNote },
+  { label: 'Log out', to: null, icon: LogOut }, // No route, it's an action
+]
+
+const isActiveRoute = (path: string) => route.path === path
+
+const handleLogout = () => {
+  logout(); // ✅ Calls the real logout logic
+}
   </script>
   
   <style scoped>
