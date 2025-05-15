@@ -38,23 +38,23 @@ import { selectedDate } from '@/modules/globalStates/state' // 👈 viktig!
 
 const currentDate = ref(new Date())
 
-// Sett valgt dato fra localStorage ved oppstart
+// Set chosen date for localStorage when starting
 onMounted(() => {
   const stored = localStorage.getItem('selectedNoteDate')
   if (stored) selectedDate.value = new Date(stored)
 })
 
-// Vis valgt måned og år
+// Shoow chosen month and year
 const formattedMonthYear = computed(() =>
   format(currentDate.value, 'MMMM yyyy')
 )
 
-// Startdato for uke
+// Start date for week
 const startOfCurrentWeek = computed(() =>
   startOfWeek(currentDate.value, { weekStartsOn: 1 })
 )
 
-// Ukedager
+// Weekdays
 const weekDays = computed(() => {
   const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   return Array.from({ length: 7 }, (_, i) => {
@@ -66,7 +66,7 @@ const weekDays = computed(() => {
   })
 })
 
-// Funksjoner
+// Functions
 const isToday = (date: Date) => isSameDay(date, new Date())
 const isSelected = (date: Date) => isSameDay(date, selectedDate.value)
 
