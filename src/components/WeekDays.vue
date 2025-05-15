@@ -132,7 +132,6 @@ function selectDate(date: Date) {
   border-radius: 10px;
   height: 85px;
   cursor: pointer;
-
   transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, color 0.3s;
   background-color: white;
   color: #111;
@@ -154,6 +153,7 @@ function selectDate(date: Date) {
   z-index: 0;
 }
 
+
 .day-name,
 .day-number {
   position: relative;
@@ -162,8 +162,7 @@ function selectDate(date: Date) {
 
 .day.selected,
 .day.today.selected {
-  border-color: #fadb09cc;
-}
+  border-color: #fadb09cc;}
 
 .day.today:not(.selected)::before {
   background-color: #fad809;
