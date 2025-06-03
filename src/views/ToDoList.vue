@@ -73,7 +73,7 @@ const newTask = ref("")
 const tasks = ref<TaskWithLocalState[]>([])
 
 const token = localStorage.getItem("lsToken") ?? ""
-const userId = localStorage.getItem("userIDToken") ?? ""
+const userId = ref("")
 
 const api = axios.create({
   baseURL: "https://daily-planner-kyar.onrender.com/api/tasks",
@@ -82,13 +82,21 @@ const api = axios.create({
   },
 })
 
-onMounted(fetchTasks)
+onMounted(() => {
+  const storedId = localStorage.getItem("userIDToken")
+  if (storedId) {
+    userId.value = storedId
+    fetchTasks()
+  } else {
+    console.warn("⚠️ No userIDToken found in localStorage.")
+  }
+})
 
 async function fetchTasks() {
-  if (!userId) return
+  if (!userId.value) return
   try {
     const response = await api.get("/", {
-      params: { userId }
+      params: { userId: userId.value }
     })
     tasks.value = response.data.map((task: TaskWithLocalState) => ({
       ...task,
@@ -101,14 +109,14 @@ async function fetchTasks() {
 
 async function addTask() {
   const taskText = newTask.value.trim()
-  if (!taskText || !userId || !token) return
+  if (!taskText || !userId.value || !token) return
 
   try {
     const res = await axios.post(
       "https://daily-planner-kyar.onrender.com/api/tasks",
       {
         title: taskText,
-        _createdBy: userId,
+        _createdBy: userId.value,
         isCompleted: false,
         highPriority: false,
       },
@@ -179,6 +187,7 @@ const sortedTasks = computed(() => {
   )
 })
 </script>
+
 
 
 

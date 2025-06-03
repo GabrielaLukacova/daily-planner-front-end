@@ -15,7 +15,7 @@ async function fetchActivities() {
   if (!token || !userId) return
 
   try {
-    const res = await fetch(`https://daily-planner-kyar.onrender.com/api/activities`, {
+    const res = await fetch(`https://daily-planner-kyar.onrender.com/api/activities?userId=${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -23,7 +23,7 @@ async function fetchActivities() {
     const data = await res.json()
     allActivities.value = data
   } catch (error) {
-    console.error('❌ Failed to fetch activities:', error)
+    console.error('Failed to fetch activities:', error)
   }
 }
 
@@ -60,7 +60,7 @@ async function addActivity(activity: Activity) {
     allActivities.value.unshift(saved)
     showPopup.value = false
   } catch (err: any) {
-    console.error('❌ Error saving activity:', err.message)
+    console.error('Error saving activity:', err.message)
   }
 }
 

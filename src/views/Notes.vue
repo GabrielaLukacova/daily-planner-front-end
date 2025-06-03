@@ -18,9 +18,10 @@
       @input="updateText"
       :style="{ fontSize: selectedSize }"
     ></div>
+
     <div class="save-button-container">
-  <button @click="saveNote" class="button-save">Save</button>
-</div>
+      <button @click="saveNote" class="button-save">Save</button>
+    </div>
 
     <p class="date-info">Note for: {{ formattedDate }}</p>
     <p v-if="successMessage" class="success-msg">{{ successMessage }}</p>
@@ -60,11 +61,13 @@ async function fetchNote() {
     )
 
     if (!res.ok) throw new Error(`Failed to fetch notes. Status: ${res.status}`)
+
     const notes = await res.json()
 
     const match = notes.find(
       (n: any) =>
-        new Date(n.date).toDateString() === selectedDate.value.toDateString()
+        new Date(n.date).toDateString() === selectedDate.value.toDateString() &&
+        n._createdBy === userId.value
     )
 
     if (match && editor.value) {

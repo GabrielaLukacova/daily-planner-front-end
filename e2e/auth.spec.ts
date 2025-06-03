@@ -2,10 +2,13 @@ import { test, expect } from '@playwright/test';
 
 // Define a test that covers both user registration and login
 test('user can register and then log in successfully', async ({ page }) => {
+  
   // Navigate to the auth page (login/register)
   await page.goto('http://localhost:5173/auth');
 
+
   // --- Registration ---
+
   // Switch to registration mode by clicking the "Create account" button
   await page.getByRole('button', { name: 'Create account' }).click();
 
@@ -23,11 +26,15 @@ test('user can register and then log in successfully', async ({ page }) => {
   // Verify that a success message appears after registration
   await expect(page.locator('text=Account successfully created')).toBeVisible();
 
+
   // --- Switch to login ---
+
   // Return to login mode
   await page.getByRole('button', { name: 'Login' }).click();
 
+
   // --- Login ---
+
   // Fill in the login form with the newly registered credentials
   await page.getByPlaceholder('Email').fill(uniqueEmail);
   await page.getByPlaceholder('Password').fill('test1234');

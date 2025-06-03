@@ -21,18 +21,9 @@
   import { ref, computed, defineProps } from 'vue';
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
   import { keywordIconMap } from '@/utils/iconMap';
+  import type { Activity } from '@/interfaces/interfaces';
+
   
-  interface Activity {
-    title: string;
-    description: string;
-    date: Date;
-    startTime: string;
-    endTime: string;
-    place: string;
-    isRepeating: boolean;
-    repeating?: string;
-    _createdBy: string;
-  }
   
   const props = defineProps<{ initialActivity: Activity }>();
   const activity = ref({ ...props.initialActivity });

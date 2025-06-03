@@ -6,7 +6,7 @@ import router from './router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { keywordIconMap } from './utils/iconMap';
-import { useUsers } from './modules/auth/useUsers'; // Import useUsers
+import { useUsers } from './modules/auth/useUsers'; 
 
 Object.values(keywordIconMap).forEach(icon => library.add(icon));
 
