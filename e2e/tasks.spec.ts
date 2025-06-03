@@ -20,7 +20,7 @@ test('user can create and complete a task', async ({ page }) => {
   await page.getByRole('button', { name: 'Login' }).click();
 
   // Go to the task list page
-  await page.getByRole('link', { name: 'To-do list' }).click(); // Adjust selector if needed
+  await page.getByRole('link', { name: 'To-do list' }).click(); 
 
   // Add a new task
   await page.getByPlaceholder('What do you need to do?').fill('Write E2E test');

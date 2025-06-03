@@ -19,7 +19,7 @@ test('user can write and save a note', async ({ page }) => {
   await page.getByRole('button', { name: 'Login' }).click();
 
   // Go to the notes page
-  await page.getByRole('link', { name: 'Notes' }).click(); // Adjust if you use icons/text
+  await page.getByRole('link', { name: 'Notes' }).click(); 
 
   // Type in the editor
   const noteText = 'This is a test note using Playwright';
